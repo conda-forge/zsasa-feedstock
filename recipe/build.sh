@@ -30,3 +30,7 @@ zig build \
     -Dcpu=baseline \
     -j"${CPU_COUNT:-1}" \
     --summary all
+
+# The work directory is copied into every package that inherits this build;
+# the Zig caches are large and of no use there.
+rm -rf "${ZIG_GLOBAL_CACHE_DIR}" "${ZIG_LOCAL_CACHE_DIR}"

@@ -32,3 +32,8 @@ if errorlevel 1 exit /b 1
 :: that can only describe one of them. Do not ship it.
 if exist "%LIBRARY_BIN%\zsasa.pdb" del "%LIBRARY_BIN%\zsasa.pdb"
 if errorlevel 1 exit /b 1
+
+:: The work directory is copied into every package that inherits this build;
+:: the Zig caches are large and of no use there.
+if exist "%ZIG_GLOBAL_CACHE_DIR%" rmdir /s /q "%ZIG_GLOBAL_CACHE_DIR%"
+if exist "%ZIG_LOCAL_CACHE_DIR%" rmdir /s /q "%ZIG_LOCAL_CACHE_DIR%"
