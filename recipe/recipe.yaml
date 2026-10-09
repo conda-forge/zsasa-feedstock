@@ -48,12 +48,31 @@ source:
     target_directory: zig-deps/zxdrfile
 
 build:
-  number: 0
+  number: 1
 
 outputs:
+  # Build once: the program and the library come out of the same `zig build`.
+  - staging:
+      name: zsasa-build
+    requirements:
+      build:
+        - zig >=0.16.0,<0.17
+        # Zig brings its own libc stubs and needs no C compiler or sysroot. The
+        # stdlib package is listed for its run-export, which libzsasa and
+        # zsasa-cli inherit: it puts the __glibc / __osx lower bound on them, the
+        # same c_stdlib_version zig_target uses.
+        - if: unix
+          then: ${{ stdlib('c') }}
+    build:
+      script:
+        file: build
+        env:
+          ZIG_TARGET: ${{ zig_target }}
+
   # The shared library with the C ABI. It is what the Python package loads.
   - package:
       name: libzsasa
+    inherit: zsasa-build
     build:
       dynamic_linking:
         # libzsasa links against the system C library only, so there is no RPATH
@@ -67,11 +86,7 @@ outputs:
         missing_dso_allowlist:
           - if: osx
             then: "@rpath/libzsasa.dylib"
-      script:
-        file: build
-        env:
-          ZIG_TARGET: ${{ zig_target }}
-      # The build script installs the program and the library; keep the library.
+      # The staging build installs the program and the library; keep the library.
       files:
         include:
           - if: unix
@@ -80,14 +95,6 @@ outputs:
               - Library/bin/zsasa.dll
               - Library/lib/zsasa.lib
     requirements:
-      build:
-        - zig >=0.16.0,<0.17
-        # Zig brings its own libc stubs and needs no C compiler or sysroot. The
-        # stdlib package is listed for its run-export: it puts the __glibc /
-        # __osx lower bound on the package, the same c_stdlib_version zig_target
-        # uses.
-        - if: unix
-          then: ${{ stdlib('c') }}
       run:
         # On Windows Zig links against its bundled mingw-w64, which uses the
         # Universal CRT (api-ms-win-crt-*.dll) and nothing from the MSVC
@@ -114,24 +121,17 @@ outputs:
   # libzsasa (on linux it is fully static).
   - package:
       name: zsasa-cli
+    inherit: zsasa-build
     build:
       dynamic_linking:
         binary_relocation: false
-      script:
-        file: build
-        env:
-          ZIG_TARGET: ${{ zig_target }}
-      # The build script installs the program and the library; keep the program.
+      # The staging build installs the program and the library; keep the program.
       files:
         include:
           - if: unix
             then: bin/zsasa
             else: Library/bin/zsasa.exe
     requirements:
-      build:
-        - zig >=0.16.0,<0.17
-        - if: unix
-          then: ${{ stdlib('c') }}
       run:
         - if: win
           then: ucrt
