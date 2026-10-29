@@ -1,14 +1,16 @@
 schema_version: 1
 
 context:
-  version: "0.11.0"
+  version: "0.12.0"
   # Zig packages zsasa is built from, as resolved from build.zig.zon:
   #   zsasa -> ztraj -> zsasa 0.2.11 (an older release, for ztraj's own SASA code) -> zxdrfile
   # When updating, follow the `.dependencies` of each build.zig.zon and keep
   # these three in step. A stale entry cannot go unnoticed: build.sh/build.bat
   # let Zig recompute each package hash, and `zig build --system` only accepts
   # the hashes that build.zig.zon asks for.
-  ztraj_version: "0.8.0"
+  # zsasa 0.12.0 pins ztraj to a commit after its v0.8.0 tag (the DCD fixes),
+  # so ztraj is taken from that commit's archive rather than from a tag.
+  ztraj_commit: "f483cc23253cc804d808294ab3b8d3d614a19858"
   zsasa_dep_version: "0.2.11"
   zxdrfile_version: "0.4.0"
   # Zig compiles for the build machine (its CPU and OS version) unless it is
@@ -33,12 +35,12 @@ recipe:
 
 source:
   - url: https://github.com/N283T/zsasa/archive/refs/tags/v${{ version }}.tar.gz
-    sha256: d8976b30b45af65ea9f2ff2d5b1b253f04a05d1d7488807bc309eb81e6fdcf0a
+    sha256: 5d0d6d8d5e0eba1dc412271ff543f0d3e963cbc9b627787233a086e76eeaa0d6
   # Zig package dependencies. `zig build` would download these; the build has
   # no network access, so they are listed here and handed to Zig as local
   # directories (see build.sh).
-  - url: https://github.com/N283T/ztraj/archive/refs/tags/v${{ ztraj_version }}.tar.gz
-    sha256: c7abf6d94b9ca401e07752fe2f99502c50f79321d2f9558969464151cba2628a
+  - url: https://github.com/N283T/ztraj/archive/${{ ztraj_commit }}.tar.gz
+    sha256: b64863e8df0a9c20d84c10d0157d4b9cb8f5f9f862109b830b1f462e77486fe6
     target_directory: zig-deps/ztraj
   - url: https://github.com/N283T/zsasa/archive/refs/tags/v${{ zsasa_dep_version }}.tar.gz
     sha256: 72f7e50e3eb00341a7f10ca144134a09b0cad5b8c414156cc98beb625ee05bb9
