@@ -1,7 +1,7 @@
 schema_version: 1
 
 context:
-  version: "0.12.1"
+  version: "0.13.0"
   # Zig packages zsasa is built from, as resolved from build.zig.zon:
   #   zsasa -> ztraj -> zsasa 0.2.11 (an older release, for ztraj's own SASA code) -> zxdrfile
   # When updating, follow the `.dependencies` of each build.zig.zon and keep
@@ -35,7 +35,7 @@ recipe:
 
 source:
   - url: https://github.com/N283T/zsasa/archive/refs/tags/v${{ version }}.tar.gz
-    sha256: 32c6d7266cf758f8448fdc29dd584a311d6d3f1d0029189eafe05c845bf6619d
+    sha256: cbbed71e03561982fd1900d4188c2fa4b79c93c7e7786cacfe0081486da4270a
   # Zig package dependencies. `zig build` would download these; the build has
   # no network access, so they are listed here and handed to Zig as local
   # directories (see build.sh).
