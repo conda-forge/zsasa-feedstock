@@ -16,6 +16,8 @@ for /d %%D in (zig-deps\*) do (
     call zig fetch "%%D"
     if errorlevel 1 exit /b 1
 )
+call zig build --fetch
+if errorlevel 1 exit /b 1
 
 :: -Dcpu=baseline is x86-64-v1 here, not the CPU of the build machine.
 :: Zig puts zsasa.exe and zsasa.dll in bin and the import library in lib.

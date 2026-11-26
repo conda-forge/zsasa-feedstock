@@ -1,18 +1,15 @@
 schema_version: 1
 
 context:
-  version: "0.13.0"
-  # Zig packages zsasa is built from, as resolved from build.zig.zon:
-  #   zsasa -> ztraj -> zsasa 0.2.11 (an older release, for ztraj's own SASA code) -> zxdrfile
-  # When updating, follow the `.dependencies` of each build.zig.zon and keep
-  # these three in step. A stale entry cannot go unnoticed: build.sh/build.bat
-  # let Zig recompute each package hash, and `zig build --system` only accepts
-  # the hashes that build.zig.zon asks for.
-  # zsasa 0.12.0 pins ztraj to a commit after its v0.8.0 tag (the DCD fixes),
-  # so ztraj is taken from that commit's archive rather than from a tag.
-  ztraj_commit: "f483cc23253cc804d808294ab3b8d3d614a19858"
-  zsasa_dep_version: "0.2.11"
-  zxdrfile_version: "0.4.0"
+  version: "0.14.0"
+  # Zig packages zsasa is built from, as resolved from build.zig.zon. Since
+  # 0.14.0 zsasa takes only the `ztraj-io` module of ztraj (`.io_only = true`),
+  # so ztraj's own (lazy) zsasa dependency is never needed and ztraj is the
+  # only package to list. When updating, keep ztraj_version in step with
+  # build.zig.zon. A stale entry cannot go unnoticed: build.sh/build.bat let
+  # Zig recompute the package hash, and `zig build --system` only accepts the
+  # hash that build.zig.zon asks for.
+  ztraj_version: "0.10.0"
   # Zig compiles for the build machine (its CPU and OS version) unless it is
   # given a target, and it does not read MACOSX_DEPLOYMENT_TARGET. Spell the
   # target out from the conda-forge pinning instead: c_stdlib_version is the
@@ -35,19 +32,13 @@ recipe:
 
 source:
   - url: https://github.com/N283T/zsasa/archive/refs/tags/v${{ version }}.tar.gz
-    sha256: cbbed71e03561982fd1900d4188c2fa4b79c93c7e7786cacfe0081486da4270a
+    sha256: 275b56407a5200bdd16f17dd08ae5db5d352ce6a96688103137b8328a69a7d62
   # Zig package dependencies. `zig build` would download these; the build has
   # no network access, so they are listed here and handed to Zig as local
   # directories (see build.sh).
-  - url: https://github.com/N283T/ztraj/archive/${{ ztraj_commit }}.tar.gz
-    sha256: b64863e8df0a9c20d84c10d0157d4b9cb8f5f9f862109b830b1f462e77486fe6
+  - url: https://github.com/N283T/ztraj/archive/refs/tags/v${{ ztraj_version }}.tar.gz
+    sha256: 57f28c0d26b7e4bdc3f3104f522b59af65f48156ba3938c7794c818d653ab384
     target_directory: zig-deps/ztraj
-  - url: https://github.com/N283T/zsasa/archive/refs/tags/v${{ zsasa_dep_version }}.tar.gz
-    sha256: 72f7e50e3eb00341a7f10ca144134a09b0cad5b8c414156cc98beb625ee05bb9
-    target_directory: zig-deps/zsasa
-  - url: https://github.com/N283T/zxdrfile/archive/refs/tags/v${{ zxdrfile_version }}.tar.gz
-    sha256: daffd0008cdac67b3485f12c169a93b6f6e7f0287a1a85caf0b2ba706606f644
-    target_directory: zig-deps/zxdrfile
 
 build:
   number: 0
@@ -58,7 +49,7 @@ outputs:
       name: zsasa-build
     requirements:
       build:
-        - zig >=0.16.0,<0.17
+        - zig >=0.17.1,<0.18
         # Zig brings its own libc stubs and needs no C compiler or sysroot. The
         # stdlib package is listed for its run-export, which libzsasa and
         # zsasa-cli inherit: it puts the __glibc / __osx lower bound on them, the
@@ -228,16 +219,14 @@ about:
     Biopython, Biotite, MDTraj and MDAnalysis) and brings the command line
     program with it. `zsasa-cli` is the command line program alone, and
     `libzsasa` the shared library with the C ABI.
-  # zsasa and ztraj are MIT; the XTC/TRR reader in ztraj and zxdrfile derives
-  # from libxdrfile (BSD-2-Clause). All of them are compiled into the binaries.
+  # zsasa and ztraj are MIT; the XTC/TRR reader in ztraj derives from
+  # libxdrfile (BSD-2-Clause). Both are compiled into the binaries.
   license: MIT AND BSD-2-Clause
   license_file:
     - LICENSE
     - THIRD_PARTY_NOTICES.md
     - zig-deps/ztraj/LICENSE
     - zig-deps/ztraj/THIRD_PARTY_NOTICES.md
-    - zig-deps/zsasa/LICENSE
-    - zig-deps/zxdrfile/LICENSE
   documentation: https://n283t.github.io/zsasa/
   repository: https://github.com/N283T/zsasa
 
